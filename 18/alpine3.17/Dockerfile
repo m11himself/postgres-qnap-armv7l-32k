@@ -49,6 +49,7 @@ RUN mkdir /docker-entrypoint-initdb.d
 ENV PG_MAJOR 18
 ENV PG_VERSION 18.1
 ENV PG_SHA256 ff86675c336c46e98ac991ebb306d1b67621ece1d06787beaade312c2c915d54
+ENV PGVECTOR_VERSION 0.8.1
 
 ENV DOCKER_PG_LLVM_DEPS \
 		llvm15-dev \
@@ -66,6 +67,15 @@ RUN set -eux; \
 		--strip-components 1 \
 	; \
 	rm postgresql.tar.bz2; \
+	\
+	wget -O pgvector.tar.bz2 "https://github.com/pgvector/pgvector/archive/refs/tags/v$PGVECTOR_VERSION.tar.gz"; \
+	tar \
+		--extract \
+		--file pgvector.tar.bz2 \
+		--directory /usr/src/postgresql/contrib \
+	; \
+	sed -i '/vacuumlo/ipgvector-0.8.1\t\\' /usr/src/postgresql/contrib/Makefile; \
+	rm pgvector.tar.bz2; \
 	\
 	apk add --no-cache --virtual .build-deps \
 		$DOCKER_PG_LLVM_DEPS \
